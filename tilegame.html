@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Tile Game</title>
+    <link href="https://fonts.googleapis.com/css?family=Atomic+Age" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Permanent+Marker" rel="stylesheet">
+    <style media="screen">
+      *{
+        box-sizing: border-box;
+      }
+      #head-section{
+        display:flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Atomic Age', cursive;
+      }
+      #initialstate{
+        display:flex;
+      }
+      #initialstate > input{
+        display: block;
+      }
+      .block{
+        width:100%;
+      }
+      #tile-container{
+        display: none;
+        max-width:700px;
+        height:700px;
+        background:#efefef;
+        flex-flow: wrap;
+        margin:0 auto;
+      }
+      #scoredom{
+        display:none;
+        font-family: 'Permanent Marker', cursive;
+        font-size: 30px;
+        font-weight: bold;
+        color: #333333;
+      }
+      .single-tile{
+        border:2px solid #607D8B;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Permanent Marker', cursive;
+        font-size: 30px;
+        color: #ffffff;
+        will-change:opacity,transform;
+        transition: opacity 0.1s ease-in,transform 0.8s ease-out;
+        transform: translateX(-800px);
+      }
+      @keyframes highlightanimation{
+        0%{
+          opacity:0;
+        }
+        50%{
+          opacity:1;
+        }
+        100%{
+          opacity:0;
+        }
+      }
+      #tile-container .single-tile.highlight{
+        animation: highlightanimation 1s ease-in infinite;
+      }
+      .single-tile:nth-child(n){
+        background: #4CAF50;
+      }
+      .single-tile:nth-child(2n){
+        background: #3F51B5;
+      }
+      .single-tile:hover{
+        cursor: pointer;
+        opacity: 0.6;
+      }
+      .single-tile.visible{
+        transform: translateX(0px);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="head-section">
+      <h1>Welcome to the tile game</h1>
+    </div>
+    <div id="initialstate">
+      <div class="block">
+        <input id="inputrows" type="number"  placeholder="Enter the number of rows" name="input_rows" value="">
+      </div>
+      <div class="block">
+        <input id="inputcolumns" type="number" name="input_columns" placeholder="Enter the number of columns"  value="">
+      </div>
+      <div class="block">
+        <input id="submitbutton" type="submit" name="submit_button" onclick="submitTileDimension()" value="Submit">
+      </div>
+    </div>
+    <div id="scoredom"></div>
+    <div id="tile-container">
+
+    </div>
+  </body>
+  <script type="text/javascript">
+    var score = 0;
+
+
+    function submitTileDimension(){
+      window.rows = document.getElementById('inputrows').value;
+      window.columns = document.getElementById('inputcolumns').value;
+      var rows = window.rows;
+      var columns = window.columns;
+      var scoredom = document.getElementById('scoredom');
+
+      if(!rows || !columns){
+        alert("enter rows and columns and hit submit");
+        return;
+      }
+      else{
+        if(rows > 8 || columns > 8 ){
+          alert("please enter rows or columns less than or equal to 10");
+          return;
+        }
+        var width = 700;
+        var height = 700;
+        var tilecounter = 0;
+        var singleTileWidth = width/columns;
+        var singleTileHeight = width/rows;
+        var tilecontainer = document.getElementById('tile-container');
+        var initialstate = document.getElementById('initialstate');
+        initialstate.style.display = "none";
+        tilecontainer.style.display = "flex";
+        scoredom.style.display = "flex";
+        for(var i=1; i <= columns ; i++){
+          for(var j = 1; j <= rows ; j++){
+            var divElement = document.createElement('div');
+            tilecounter= tilecounter+1;
+            divElement.setAttribute("class","single-tile");
+            divElement.setAttribute("id",tilecounter);
+            divElement.setAttribute("style","width:"+singleTileWidth+"px;height:"+singleTileHeight+ "px;");
+            divElement.innerHTML = tilecounter;
+            tilecontainer.appendChild(divElement);
+            divElement.onclick = tileclick;
+          }
+        }
+
+        var tiles = document.getElementById('tile-container').childNodes;
+        console.log('tiles',tiles);
+        for(var k=1; k< tiles.length;k++){
+          (function(index) {
+            setTimeout(function(){
+                addClass(tiles[index],'visible');
+            }, index * 100);
+          })(k);
+        }
+
+
+
+        window.randomnumber = getRandomTileSelector(rows,columns);
+        highlightRandomTile(window.randomnumber);
+      }
+    }
+
+    function tileclick(event){
+      console.log('tileclick event',event);
+        var scoredom = document.getElementById('scoredom');
+      if(event.target.id == window.randomnumber){
+          score++;
+          scoredom.innerHTML = score;
+          chooseNewRandomTile(window.randomnumber);
+      }
+      else{
+          score--;
+          scoredom.innerHTML = score;
+      }
+
+    }
+    function chooseNewRandomTile(id){
+        console.log('chooseNewRandomTile',id);
+        removeClass(document.getElementById(id),'highlight');
+        var newRandomNumber = getRandomTileSelector(window.rows,window.columns);
+        window.randomnumber = newRandomNumber;
+        console.log('newRandomNumber',newRandomNumber);
+        highlightRandomTile(newRandomNumber);
+    }
+
+    function getRandomTileSelector(rows,columns){
+      var totaltiles = rows * columns;
+      var randomnumber = Math.floor((Math.random() * totaltiles) + 1);
+      console.log('randomnumber in getRandomTileSelector',randomnumber);
+      return randomnumber;
+    }
+
+    function highlightRandomTile(randomnumber){
+      console.log('highlightRandomTile',randomnumber);
+      var tilenumber = randomnumber;
+      if(!hasClass(document.getElementById(tilenumber),'highlight')){
+        addClass(document.getElementById(tilenumber),'highlight');
+      }
+    }
+
+    function hasClass(el, className) {
+      console.log('el',el,className);
+      if (el.classList)
+        return el.classList.contains(className)
+      else
+        return !!el.className.match(new RegExp('(\\s|^)' + className + '(\\s|$)'))
+    }
+
+    function addClass(el, className) {
+      if (el.classList)
+        el.classList.add(className)
+      else if (!hasClass(el, className)) el.className += " " + className
+    }
+
+    function removeClass(el, className) {
+      if (el.classList)
+        el.classList.remove(className)
+      else if (hasClass(el, className)) {
+        var reg = new RegExp('(\\s|^)' + className + '(\\s|$)')
+        el.className=el.className.replace(reg, ' ')
+      }
+    }
+  </script>
+</html>
