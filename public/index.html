@@ -29,7 +29,11 @@
         display: none;
         max-width:700px;
         height:700px;
-        background:#efefef;
+        /*background:#efefef;*/
+        background: #3D7EAA;  /* fallback for old browsers */
+        background: -webkit-linear-gradient(to right, #FFE47A, #3D7EAA);  /* Chrome 10-25, Safari 5.1-6 */
+        background: linear-gradient(to right, #FFE47A, #3D7EAA); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+
         flex-flow: wrap;
         margin:0 auto;
       }
@@ -44,7 +48,7 @@
         flex-direction: row;
       }
       .single-tile{
-        border:2px solid #607D8B;
+        border:1px solid #9E9E9E;
         display: flex;
         align-items: center;
         justify-content: center;
