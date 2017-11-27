@@ -10,7 +10,9 @@
         box-sizing: border-box;
       }
       body{
-        background: #000000;
+        background: #232526;  /* fallback for old browsers */
+        background: -webkit-linear-gradient(to right, #414345, #232526);  /* Chrome 10-25, Safari 5.1-6 */
+        background: linear-gradient(to right, #414345, #232526); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
         color:#ffffff;
       }
       #head-section{
@@ -51,7 +53,8 @@
         color: #ffffff;
         will-change:opacity,transform;
         transition: opacity 0.1s ease-in,transform 0.8s ease-out;
-        transform: translateX(-900px);
+        transform: translateX(-1200px);
+        position: relative;
       }
       @keyframes highlightanimation{
         0%{
@@ -67,12 +70,12 @@
       #tile-container .single-tile.highlight{
         animation: highlightanimation 1s ease-in infinite;
       }
-      .single-tile:nth-child(n){
+      /*.single-tile:nth-child(n){
         background: #4CAF50;
       }
       .single-tile:nth-child(2n){
         background: #3F51B5;
-      }
+      }*/
       .single-tile:hover{
         cursor: pointer;
         opacity: 0.6;
@@ -167,6 +170,73 @@
           opacity:1;
         }
       }
+      .plus-one{
+        position: absolute;
+        color:green;
+        will-change:opacity,transform;
+        font-size: 14;
+        transform: translateY(0px);
+        transition:opacity 0.99s ease-in;
+        display: none;
+        opacity: 0;
+      }
+      .minus-one{
+        position: absolute;
+        color:red;
+        will-change:opacity,transform;
+        font-size: 14;
+        transform: translateY(0px);
+        opacity: 0;
+        display: none;
+        transition:opacity 0.99s ease-in;
+      }
+
+      @keyframes slideup {
+        0%{
+          transform: translateY(0px);
+        }
+        10%{
+          transform: translateY(5px);
+        }
+        20%{
+          transform: translateY(10px);
+        }
+        30%{
+          transform: translateY(15px);
+        }
+        40%{
+          transform: translateY(27px);
+        }
+        50%{
+          transform: translateY(19px);
+        }
+        60%{
+          transform: translateY(21px);
+        }
+
+        70%{
+          transform: translateY(23px);
+        }
+        80%{
+          transform: translateY(25px);
+        }
+        90%{
+          transform: translateY(27px);
+        }
+        100%{
+          transform: translateY(29px);
+        }
+      }
+      .correct .plus-one{
+        animation: slideup 1s ease-out;
+        display: flex;
+        opacity:1;
+      }
+      .wrong .minus-one{
+        animation: slideup 1s ease-out;
+        display: flex;
+        opacity: 1;
+      }
     </style>
   </head>
   <body>
@@ -244,7 +314,15 @@
             divElement.setAttribute("class","single-tile");
             divElement.setAttribute("id",tilecounter);
             divElement.setAttribute("style","width:"+singleTileWidth+"px;height:"+singleTileHeight+ "px;");
-            divElement.innerHTML = tilecounter;
+            divElement.style.background ="url('./icons/"+getRandomNumber(15) +".svg')";
+            var plusoneelement = document.createElement('div');
+            var minusoneelement = document.createElement('div');
+            plusoneelement.setAttribute('class','plus-one');
+            minusoneelement.setAttribute('class','minus-one');
+            plusoneelement.innerHTML = '+1';
+            minusoneelement.innerHTML = '-1';
+            divElement.appendChild(plusoneelement);
+            divElement.appendChild(minusoneelement);
             tilecontainer.appendChild(divElement);
             divElement.onclick = tileclick;
           }
@@ -270,7 +348,7 @@
     }
 
     function tileclick(event){
-      // console.log('tileclick event',event);
+      console.log('tileclick event',event.target.id,window.randomnumber);
         var myscore = document.getElementById('myscore');
         var totalchances = document.getElementById('totalchances');
         var correctattempts = document.getElementById('correctattempts');
@@ -279,18 +357,57 @@
           score++;
           totalchancesvalue++;
           correctattemptsvalue++;
+          var clickedelement = document.getElementById(event.target.id);
+          clickedelement.style.background = "url('./icons/"+getRandomNumber(15) +".svg')";
+          clickedelementchild = clickedelement.childNodes;
+          console.log('clickedelementchild',clickedelementchild);
+          for(i=0;i<clickedelementchild.length;i++){
+            if(clickedelementchild[i].className === 'plus-one'){
+              clickedelementchild[i].style.display= 'flex';
+              addClass(clickedelement,'correct');
+            }
+          }
           myscore.innerHTML = "Score : "+ score;
           totalchances.innerHTML = "Total Chances : "+ totalchancesvalue;
           correctattempts.innerHTML = "Correct Attempts : "+ correctattemptsvalue;
           chooseNewRandomTile(window.randomnumber);
+
+          for(i=0;i<clickedelementchild.length;i++){
+            if(clickedelementchild[i].className === 'plus-one'){
+              (function(i){
+                setTimeout(function(){
+                clickedelementchild[i].style.display= 'none';
+                removeClass(clickedelement,'correct');
+              },1000)})(i);
+            }
+          }
+
       }
       else{
           score--;
           totalchancesvalue++;
           wrongattemptsvalue++;
+          var clickedelement = document.getElementById(event.target.id);
+          clickedelementchild = clickedelement.childNodes;
+          console.log('clickedelementchild',clickedelementchild);
+          for(i=0;i<clickedelementchild.length;i++){
+            if(clickedelementchild[i].className === 'minus-one'){
+              clickedelementchild[i].style.display= 'flex';
+              addClass(clickedelement,'wrong');
+            }
+          }
           myscore.innerHTML = "Score : "+ score;
           totalchances.innerHTML = "Total Chances : "+ totalchancesvalue;
           wrongattempts.innerHTML = "Wrong Attempts : "+ wrongattemptsvalue;
+          for(i=0;i<clickedelementchild.length;i++){
+            if(clickedelementchild[i].className === 'minus-one'){
+              (function(i){
+                setTimeout(function(){
+                clickedelementchild[i].style.display= 'none';
+                removeClass(clickedelement,'wrong');
+              },1000)})(i);
+            }
+          }
       }
 
     }
@@ -307,6 +424,11 @@
       var totaltiles = rows * columns;
       var randomnumber = Math.floor((Math.random() * totaltiles) + 1);
       // console.log('randomnumber in getRandomTileSelector',randomnumber);
+      return randomnumber;
+    }
+
+    function getRandomNumber(to){
+      var randomnumber = Math.floor((Math.random() * to) + 1);
       return randomnumber;
     }
 
