@@ -2,6 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
     <title>Tile Game</title>
     <link href="https://fonts.googleapis.com/css?family=Atomic+Age" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Permanent+Marker" rel="stylesheet">
@@ -131,6 +132,16 @@
         align-items: center;
         justify-content: center;
       }
+      #endscreen{
+        display:none;
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0%;
+        opacity: 0.8;
+        align-items: center;
+        justify-content: center;
+      }
       .modal{
         background: #333333;
         height:100%;
@@ -241,11 +252,52 @@
         display: flex;
         opacity: 1;
       }
+      #timer-container{
+        font-family: sans-serif;
+        color: #fff;
+        font-weight: 100;
+        text-align: center;
+        font-size: 30px;
+        display:none;
+      }
+
+    #timer-container > div{
+        padding: 10px;
+        border-radius: 3px;
+        background: #00BF96;
+        display: inline-block;
+      }
+
+    #timer-container div > span{
+        padding: 15px;
+        border-radius: 3px;
+        background: #00816A;
+        display: inline-block;
+      }
+
+    .smalltext{
+        padding-top: 5px;
+        font-size: 16px;
+      }
+    @media only screen and (max-width: 800px) and (min-width: 400px) {
+      #tile-container{}
+
+    }
     </style>
   </head>
   <body>
     <div id="head-section">
       <h3>Welcome to the tile game</h3>
+      <div id="timer-container">
+        <div>
+          <span class="minutes"></span>
+          <div class="smalltext">Minutes</div>
+        </div>
+        <div>
+          <span class="seconds"></span>
+          <div class="smalltext">Seconds</div>
+        </div>
+      </div>
     </div>
     <div id="initialstate">
       <div class="block">
@@ -273,6 +325,12 @@
       <div class="modal">
         <span>Compete And Play TileTap Game</span>
         <button id="startgame" type="submit" value="" onclick="startgamefunc()">Start Game</button>
+      </div>
+    </div>
+    <div id="endscreen">
+      <div class="modal">
+        <span>Hurray!! You scored <span id="scoredisplay"></span></span>
+        <button id="playagain" type="submit" value="" onclick="playagainfunc()">Play Again</button>
       </div>
     </div>
   </body>
@@ -306,10 +364,12 @@
         var initialstate = document.getElementById('initialstate');
         var startscreen = document.getElementById('startscreen');
         var startgame = document.getElementById('startgame');
+        var timercontainer = document.getElementById('timer-container');
         initialstate.style.display = "none";
         tilecontainer.style.display = "flex";
         scoredom.style.display = "flex";
         startscreen.style.display= "flex";
+        timercontainer.style.display = 'inline-block';
 
         for(var i=1; i <= columns ; i++){
           for(var j = 1; j <= rows ; j++){
@@ -349,6 +409,36 @@
         window.randomnumber = getRandomTileSelector(rows,columns);
         highlightRandomTile(window.randomnumber);
       }
+    }
+    function getTimeRemaining(endtime) {
+      var t = Date.parse(endtime) - Date.parse(new Date());
+      var seconds = Math.floor((t / 1000) % 60);
+      var minutes = Math.floor((t / 1000 / 60) % 60);
+      return {
+        'total': t,
+        'minutes': minutes,
+        'seconds': seconds
+      };
+    }
+
+    function initializeClock(id, endtime) {
+      var clock = document.getElementById(id);
+      var minutesSpan = clock.querySelector('.minutes');
+      var secondsSpan = clock.querySelector('.seconds');
+
+      function updateClock() {
+        var t = getTimeRemaining(endtime);
+
+        minutesSpan.innerHTML = ('0' + (t.minutes)).slice(-2);
+        secondsSpan.innerHTML = ('0' + t.seconds).slice(-2);
+
+        if (t.total <= 0) {
+          clearInterval(timeinterval);
+        }
+      }
+
+      updateClock();
+      var timeinterval = setInterval(updateClock, 1000);
     }
 
     function tileclick(event){
@@ -414,6 +504,8 @@
           }
       }
 
+      window.score = score;
+
     }
     function chooseNewRandomTile(id){
         // console.log('chooseNewRandomTile',id);
@@ -446,7 +538,32 @@
 
     function startgamefunc(){
       var startscreen = document.getElementById('startscreen');
+      var endscreen = document.getElementById('endscreen');
+      var scoredisplay = document.getElementById('scoredisplay');
       startscreen.style.display = 'none';
+      var deadline = new Date(Date.parse(new Date()) +  6 * 1000);
+      initializeClock('timer-container', deadline);
+
+      (function(endscreen,scoredisplay){
+          setTimeout(function (){
+            endscreen.style.display = 'flex';
+            scoredisplay.innerHTML = window.score;
+          },1000*6);
+        })(endscreen,scoredisplay);
+    }
+
+    function playagainfunc(){
+        score = 0;
+        totalchancesvalue = 0;
+        correctattemptsvalue = 0;
+        wrongattemptsvalue = 0;
+        endscreen = document.getElementById('endscreen');
+        endscreen.style.display = 'none';
+        myscore.innerHTML = "Score : "+ score;
+        totalchances.innerHTML = "Total Chances : "+ totalchancesvalue;
+        correctattempts.innerHTML = "Correct Attempts : "+ correctattemptsvalue;
+        wrongattempts.innerHTML = "Wrong Attempts : "+ wrongattemptsvalue;
+        startgamefunc();
     }
 
     function hasClass(el, className) {
